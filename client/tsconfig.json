@@ -13,6 +13,7 @@
     "target": "es2015",
     "module": "es2020",
     "lib": [
+      "es2019", //So we can use .flat() in src/app/_interceptors/error.interceptor.ts
       "es2018",
       "dom"
     ]
