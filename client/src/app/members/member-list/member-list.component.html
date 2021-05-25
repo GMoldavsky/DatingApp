@@ -4,11 +4,19 @@
         <p *ngFor="let member of members">{{member.knownAs}}</p>
     </div>
 </div>-->
-<div class="row">
+<!--<div class="row">
     <div *ngFor="let member of members" class="col-2">
         <app-member-card [member] = "member"></app-member-card>
     </div>
+</div>-->
+
+<div class="row">
+    <div *ngFor="let member of members$ | async" class="col-2">
+        <app-member-card [member] = "member"></app-member-card>
+    </div>
 </div>
+
+
 <!--<div class="text-center mt-3">
     <h2>Your matches - {{pagination?.totalItems}} found</h2>
 </div>

@@ -3,8 +3,8 @@ import { Injectable } from '@angular/core';
 import { environment } from 'src/environments/environment';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 //import { Member } from '../_models/member';
-// import { of, pipe } from 'rxjs';
-// import { map, take } from 'rxjs/operators';
+import { Observable, of, pipe } from 'rxjs';
+import { map, take } from 'rxjs/operators';
 // import { PaginatedResult } from '../_models/pagination';
 // import { UserParams } from '../_models/userParams';
  import { AccountService } from './account.service';
@@ -22,7 +22,7 @@ import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 })
 export class MembersService {
   baseUrl = environment.apiUrl;
-  // members: Member[] = [];
+  members: Member[] = [];
   // memberCache = new Map();
   // user: User;
   // userParams: UserParams;
@@ -47,9 +47,18 @@ export class MembersService {
   //   return this.userParams;
   // }
 
+  // getMembers() {
+  //   //return this.http.get<Member[]>(this.baseUrl + 'users', httpOptions);
+  //   return this.http.get<Member[]>(this.baseUrl + 'users');
+  // }
   getMembers() {
-    //return this.http.get<Member[]>(this.baseUrl + 'users', httpOptions);
-    return this.http.get<Member[]>(this.baseUrl + 'users');
+    if (this.members.length > 0) return of(this.members);
+    return this.http.get<Member[]>(this.baseUrl + 'users').pipe(
+      map(members => {
+        this.members = members;
+        return members;
+      })
+    )
   }
   // getMembers(userParams: UserParams) {
   //   var response = this.memberCache.get(Object.values(userParams).join('-'));
@@ -71,10 +80,17 @@ export class MembersService {
   //     }))
   // }
 
+  // getMember(username: string) {
+  //   //return this.http.get<Member>(this.baseUrl + 'users/' + username, httpOptions);
+  //   return this.http.get<Member>(this.baseUrl + 'users/' + username);
+  // }
   getMember(username: string) {
-    //return this.http.get<Member>(this.baseUrl + 'users/' + username, httpOptions);
+    const member = this.members.find(x => x.username === username)
+    if (member !== undefined) return of(member);
+
     return this.http.get<Member>(this.baseUrl + 'users/' + username);
   }
+
   // getMember(username: string) {
   //   const member = [...this.memberCache.values()]
   //     .reduce((arr, elem) => arr.concat(elem.result), [])
@@ -86,14 +102,16 @@ export class MembersService {
   //   return this.http.get<Member>(this.baseUrl + 'users/' + username);
   // }
 
-  // updateMember(member: Member) {
-  //   return this.http.put(this.baseUrl + 'users', member).pipe(
-  //     map(() => {
-  //       const index = this.members.indexOf(member);
-  //       this.members[index] = member;
-  //     })
-  //   )
-  // }
+   updateMember(member: Member) {
+    //return this.http.put(this.baseUrl + 'users', member);
+
+    return this.http.put(this.baseUrl + 'users', member).pipe(
+      map(() => {
+        const index = this.members.indexOf(member);
+        this.members[index] = member;
+      })
+    )
+   }
 
   // setMainPhoto(photoId: number) {
   //   return this.http.put(this.baseUrl + 'users/set-main-photo/' + photoId, {});

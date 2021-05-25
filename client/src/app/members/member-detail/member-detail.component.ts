@@ -24,9 +24,11 @@ export class MemberDetailComponent implements OnInit {
   galleryImages: NgxGalleryImage[];
   //activeTab: TabDirective;
   //messages: Message[] = [];
-  //user: User;
+  user: User;
 
-  constructor(public membersService: MembersService, private route: ActivatedRoute) { }
+  constructor(public membersService: MembersService, private route: ActivatedRoute,) { 
+    //this.accountService.currentUser$.pipe(take(1)).subscribe(user => this.user = user);
+  }
 
   ngOnInit(): void {
     this.loadMember();
