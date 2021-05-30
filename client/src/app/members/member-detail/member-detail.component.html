@@ -1,6 +1,6 @@
 <!--<h1 *ngIf="member">{{member.knownAs}}</h1>-->
 
-<div class="row">
+<div class="row" *ngIf="member">
     <div class="col-4">
         <div class="card">
             <img src="{{member.photoUrl || './assets/user.png'}}" alt="{{member.knownAs}}" 
@@ -19,7 +19,7 @@
                 </div>
                 <div>
                     <strong>Last Active:</strong>
-                    <!--<p>{{member.lastActive | timeago}}</p>-->
+                    <p>{{member.lastActive | timeago}}</p>
                 </div>
                 <div>
                     <strong>Member since:</strong>

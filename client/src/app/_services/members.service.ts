@@ -1,14 +1,14 @@
+import { MemberDetailComponent } from './../members/member-detail/member-detail.component';
 import { Member } from '../_models/member';
 import { Injectable } from '@angular/core';
 import { environment } from 'src/environments/environment';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-//import { Member } from '../_models/member';
 import { Observable, of, pipe } from 'rxjs';
 import { map, take } from 'rxjs/operators';
-// import { PaginatedResult } from '../_models/pagination';
-// import { UserParams } from '../_models/userParams';
- import { AccountService } from './account.service';
-// import { User } from '../_models/user';
+import { AccountService } from './account.service';
+import { PaginatedResult } from '../_models/pagination';
+import { UserParams } from '../_models/userParams';
+import { User } from '../_models/user';
 // import { getPaginatedResult, getPaginationHeaders } from './paginationHelper';
 
 // const httpOptions = {
@@ -23,43 +23,100 @@ import { map, take } from 'rxjs/operators';
 export class MembersService {
   baseUrl = environment.apiUrl;
   members: Member[] = [];
-  // memberCache = new Map();
-  // user: User;
-  // userParams: UserParams;
+  //paginatedResult: PaginatedResult<Member[]> = new PaginatedResult<Member[]>();
+  memberCache = new Map();
+  user: User;
+  userParams: UserParams;
 
   constructor(private http: HttpClient, private accountService: AccountService) {
-    // this.accountService.currentUser$.pipe(take(1)).subscribe(user => {
-    //   this.user = user;
-    //   this.userParams = new UserParams(user);
-    // })
+    this.accountService.currentUser$.pipe(take(1)).subscribe(user => {
+      this.user = user;
+      this.userParams = new UserParams(user);
+    })
    }
 
-  //  getUserParams() {
-  //   return this.userParams;
-  // }
+   getUserParams() {
+    return this.userParams;
+  }
 
-  // setUserParams(params: UserParams) {
-  //   this.userParams = params;
-  // }
+  setUserParams(params: UserParams) {
+    this.userParams = params;
+  }
 
-  // resetUserParams() {
-  //   this.userParams = new UserParams(this.user);
-  //   return this.userParams;
-  // }
+  resetUserParams() {
+    this.userParams = new UserParams(this.user);
+    return this.userParams;
+  }
 
   // getMembers() {
   //   //return this.http.get<Member[]>(this.baseUrl + 'users', httpOptions);
   //   return this.http.get<Member[]>(this.baseUrl + 'users');
   // }
-  getMembers() {
-    if (this.members.length > 0) return of(this.members);
-    return this.http.get<Member[]>(this.baseUrl + 'users').pipe(
-      map(members => {
-        this.members = members;
-        return members;
-      })
-    )
+  // getMembers() {
+  //   if (this.members.length > 0) return of(this.members);
+  //   return this.http.get<Member[]>(this.baseUrl + 'users').pipe(
+  //     map(members => {
+  //       this.members = members;
+  //       return members;
+  //     })
+  //   )
+  // }
+
+  // getMembers(page?: number, itemsPerPage?: number) {
+  //   let params = new HttpParams();
+  //   if(page !== null && itemsPerPage !== null){
+  //     params = params.append('pageNumber', page.toString());
+  //     params = params.append('pageSize', itemsPerPage.toString());
+  //   }
+  //   return this.http.get<Member[]>(this.baseUrl + 'users', {observe:'response',params}).pipe(
+  //     map(response =>{
+  //       this.paginatedResult.result = response.body;
+  //       if (response.headers.get('Pagination') !== null){
+  //         this.paginatedResult.pagination = JSON.parse(response.headers.get('Pagination'));
+  //       }
+  //       return this.paginatedResult;
+  //     }) 
+  //   )
+  // }
+  getMembers(userParams: UserParams) {
+    //console.log(Object.values(userParams).join('-'));
+    var response = this.memberCache.get(Object.values(userParams).join('-'));
+    if (response) {
+      return of(response);
+    }
+
+    let params = this.getPaginationHeaders(userParams.pageNumber, userParams.pageSize);
+    params = params.append('minAge', userParams.minAge.toString());
+    params = params.append('maxAge', userParams.maxAge.toString());
+    params = params.append('gender', userParams.gender);
+    params = params.append('orderBy', userParams.orderBy);
+
+    return this.getPaginatedResult<Member[]>(this.baseUrl + 'users', params)
+      .pipe(map(response => {
+        this.memberCache.set(Object.values(userParams).join('-'), response);
+        return response;
+      }))
   }
+  private getPaginatedResult<T>(url, params) {
+    const paginatedResult: PaginatedResult<T> = new PaginatedResult<T>();
+    return this.http.get<T>(url, { observe: 'response', params }).pipe(
+      map(response => {
+        paginatedResult.result = response.body;
+        if (response.headers.get('Pagination') !== null) {
+          paginatedResult.pagination = JSON.parse(response.headers.get('Pagination'));
+        }
+        return paginatedResult;
+      })
+    );
+  }
+
+  private getPaginationHeaders(pageNumber:number, pageSize:number){
+    let params = new HttpParams();
+      params = params.append('pageNumber', pageNumber.toString());
+      params = params.append('pageSize', pageSize.toString());
+      return params;
+  }
+
   // getMembers(userParams: UserParams) {
   //   var response = this.memberCache.get(Object.values(userParams).join('-'));
   //   if (response) {
@@ -84,23 +141,24 @@ export class MembersService {
   //   //return this.http.get<Member>(this.baseUrl + 'users/' + username, httpOptions);
   //   return this.http.get<Member>(this.baseUrl + 'users/' + username);
   // }
-  getMember(username: string) {
-    const member = this.members.find(x => x.username === username)
-    if (member !== undefined) return of(member);
-
-    return this.http.get<Member>(this.baseUrl + 'users/' + username);
-  }
-
   // getMember(username: string) {
-  //   const member = [...this.memberCache.values()]
-  //     .reduce((arr, elem) => arr.concat(elem.result), [])
-  //     .find((member: Member) => member.username === username);
+  //   //console.log(this.memberCache);
+  //   //console.log([...this.memberCache.values()]);
+  //   const member = this.members.find(x => x.username === username)
+  //   if (member !== undefined) return of(member);
 
-  //   if (member) {
-  //     return of(member);
-  //   }
   //   return this.http.get<Member>(this.baseUrl + 'users/' + username);
   // }
+  getMember(username: string) {
+    const member = [...this.memberCache.values()]
+      .reduce((arr, elem) => arr.concat(elem.result), [])
+      .find((member: Member) => member.username === username);
+
+    if (member) {
+      return of(member);
+    }
+    return this.http.get<Member>(this.baseUrl + 'users/' + username);
+  }
 
    updateMember(member: Member) {
     //return this.http.put(this.baseUrl + 'users', member);
