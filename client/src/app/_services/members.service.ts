@@ -9,7 +9,7 @@ import { AccountService } from './account.service';
 import { PaginatedResult } from '../_models/pagination';
 import { UserParams } from '../_models/userParams';
 import { User } from '../_models/user';
-// import { getPaginatedResult, getPaginationHeaders } from './paginationHelper';
+//import { getPaginatedResult, getPaginationHeaders } from './paginationHelper';
 
 // const httpOptions = {
 //   headers: new HttpHeaders({
@@ -179,13 +179,17 @@ export class MembersService {
     return this.http.delete(this.baseUrl + 'users/delete-photo/' + photoId);
   }
 
-  // addLike(username: string) {
-  //   return this.http.post(this.baseUrl + 'likes/' + username, {})
-  // }
+  addLike(username: string) {
+    return this.http.post(this.baseUrl + 'likes/' + username, {});
+  }
 
-  // getLikes(predicate: string, pageNumber, pageSize) {
-  //   let params = getPaginationHeaders(pageNumber, pageSize);
-  //   params = params.append('predicate', predicate);
-  //   return getPaginatedResult<Partial<Member[]>>(this.baseUrl + 'likes', params, this.http);
+  // getLikes(predicate: string) {
+  //   //return this.http.get(this.baseUrl + 'likes?predicate=' + predicate);
+  //   return this.http.get<Partial<Member[]>>(this.baseUrl + 'likes?predicate=' + predicate);
   // }
+  getLikes(predicate: string, pageNumber, pageSize) {
+    let params = this.getPaginationHeaders(pageNumber, pageSize);
+    params = params.append('predicate', predicate);
+    return this.getPaginatedResult<Partial<Member[]>>(this.baseUrl + 'likes', params);
+  }
 }
