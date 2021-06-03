@@ -1,3 +1,4 @@
+import { AdminPanelComponent } from './admin/admin-panel/admin-panel.component';
 import { MemberDetailedResolver } from './_resolvers/member-detailed.resolver';
 import { PreventUsavedChangesGuard } from './_guards/prevent-usaved-changes.guard';
 import { ServerErrorComponent } from './errors/server-error/server-error.component';
@@ -12,6 +13,7 @@ import { HomeComponent } from './home/home.component';
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { MemberEditComponent } from './members/member-edit/member-edit.component';
+import { AdminGuard } from './_guards/admin.guard';
 
 const routes: Routes = [
   {path: '', component: HomeComponent},
@@ -26,7 +28,8 @@ const routes: Routes = [
       {path: 'members/:username', component: MemberDetailComponent, resolve:{member: MemberDetailedResolver}},
       {path: 'member/edit', component: MemberEditComponent, canDeactivate: [PreventUsavedChangesGuard]},
       {path: 'lists', component: ListsComponent},
-      {path: 'messages', component: MessagesComponent}
+      {path: 'messages', component: MessagesComponent},
+      {path: 'admin', component: AdminPanelComponent, canActivate: [AdminGuard]}
     ]
   },
   {path: 'errors', component: TestErrorsComponent},

@@ -51,6 +51,7 @@ namespace API.Controllers
         //     var users = await _userRepository.GetMembersAsync();
         //     return Ok(users);
         // }
+        //[Authorize(Roles = "Admin")]
         public async Task<ActionResult<IEnumerable<MemberDto>>> GetUsers([FromQuery] UserParams userParams)
         {
             var user = await _userRepository.GetUserByUsernameAsync(User.GetUsername());
@@ -70,6 +71,7 @@ namespace API.Controllers
         //     return await _context.Users.FindAsync(id);
         // }
 
+        [Authorize(Roles = "Member")]
         [HttpGet("{username}",Name = "GetUser")]
         public async Task<ActionResult<MemberDto>> GetUser(string username)
         {
